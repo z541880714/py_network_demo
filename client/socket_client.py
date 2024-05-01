@@ -24,12 +24,16 @@ class ProtocolData:
 client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
 
-def send_datas(socket):
+def send_data(protocol_data):
+    client_socket.send(protocol_data.dumps())
+
+
+def test_send_data():
     def do():
         index = 1
         while 1:
             time.sleep(0.1)
-            socket.send(ProtocolData(2, 'this si test data from client {}'.format(index)).dumps())
+            send_data(ProtocolData(1, 'this si test data from client {}'.format(index)))
             index += 1
 
     pool.submit(do)
@@ -39,7 +43,7 @@ def analyze_data(bytes):
     data = ProtocolData.loads(bytes)
     print('protocol data:', data.type, 'data:', data.data)
     if data.type == 1:
-        send_datas(client_socket)
+        test_send_data()
 
 
 def receive():
