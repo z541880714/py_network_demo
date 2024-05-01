@@ -8,7 +8,7 @@ pool = futures.ThreadPoolExecutor(max_workers=4)
 
 server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-server_socket.bind(('localhost', 10014))
+server_socket.bind(('0.0.0.0', 10014))
 
 
 class ProtocolData:
