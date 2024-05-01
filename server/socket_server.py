@@ -3,25 +3,13 @@ import pickle
 import socket
 import threading
 import concurrent.futures as futures
+from http_protocol import run_flask
 
 pool = futures.ThreadPoolExecutor(max_workers=4)
 
 server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 server_socket.bind(('0.0.0.0', 10014))
-
-
-class ProtocolData:
-    def __init__(self, type, data):
-        self.type = type
-        self.data = data
-
-    @staticmethod
-    def loads(bytes):
-        return pickle.loads(bytes)
-
-    def dumps(self):
-        return pickle.dumps(self)
 
 
 class ClientSocket:
@@ -37,13 +25,10 @@ class ClientSocket:
                 break
             if not data:
                 break
-            protocol_data = ProtocolData.loads(data)
-            print('server: received:', protocol_data.type, protocol_data.data)
+            obj = pickle.loads(data)
+            print('server: protocol_data:', obj)
         print('server: client ', self.address, ' close')
         self.client_socket.colse()
-
-    def send(self, protocol_data):
-        self.client_socket.send(protocol_data.dumps())
 
 
 def listen_client():
@@ -56,9 +41,10 @@ def listen_client():
         print('server: connected:', addr)
         client = ClientSocket(client_socket, addr)
         pool.submit(client.receive)
-        client_socket.send(ProtocolData(1, 'welcome'.encode('utf-8')).dumps())
+        client_socket.send(pickle.dumps({'type': 1, 'data': 'welcome'.encode('utf-8')}))
 
 
 if __name__ == '__main__':
     f1 = pool.submit(listen_client)
+    run_flask()
     futures.wait([f1])
