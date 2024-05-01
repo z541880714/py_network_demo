@@ -3,6 +3,7 @@ import socket
 import threading
 
 import concurrent.futures as futures
+import time
 
 pool = futures.ThreadPoolExecutor(4)
 
@@ -20,20 +21,33 @@ class ProtocolData:
         return pickle.dumps(self)
 
 
-socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+
+
+def send_datas(socket):
+    def do():
+        index = 1
+        while 1:
+            time.sleep(0.1)
+            socket.send(ProtocolData(2, 'this si test data from client {}'.format(index)).dumps())
+            index += 1
+
+    pool.submit(do)
 
 
 def analyze_data(bytes):
     data = ProtocolData.loads(bytes)
     print('protocol data:', data.type, 'data:', data.data)
+    if data.type == 1:
+        send_datas(client_socket)
 
 
 def receive():
     def do():
-        socket.connect(('localhost', 10014))
+        client_socket.connect(('localhost', 10014))
         while True:
             try:
-                data = socket.recv(1024)
+                data = client_socket.recv(1024)
                 analyze_data(data)
             except Exception as e:
                 print("client: received error : ", e)

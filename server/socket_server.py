@@ -38,7 +38,7 @@ class ClientSocket:
             if not data:
                 break
             protocol_data = ProtocolData.loads(data)
-            print('server: received:', protocol_data)
+            print('server: received:', protocol_data.type, protocol_data.data)
         print('server: client ', self.address, ' close')
         self.client_socket.colse()
 
